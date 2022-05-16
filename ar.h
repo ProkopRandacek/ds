@@ -28,8 +28,8 @@ struct ar_head {
 	struct ar_head* _h = SKIP_BACK(struct ar_head, elms, p); \
 	size_t _l = _h->len; \
 	_h->len += n; \
-	if (_h->len == _h->cap) { \
-		_h->cap *= 2; \
+	if (_h->len >= _h->cap) { \
+		_h->cap = MAX(_h->cap*2, _h->len); \
 		_h = realloc(_h, sizeof(*_h) + sizeof(*p) * _h->cap); \
 		p = (typeof(p))&_h->elms; \
 	} \
