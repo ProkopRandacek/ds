@@ -1,3 +1,6 @@
+#ifndef DS_COMMON_H
+#define DS_COMMON_H
+
 #include <stddef.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -32,3 +35,4 @@ typedef unsigned int uint;
 #define ctz(x) __builtin_ctz(x)
 #define popc(x) __builtin_popcount(x)
 
+#endif
