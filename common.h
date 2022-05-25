@@ -4,6 +4,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include <stdbool.h>
 
 typedef uint8_t byte;
 typedef uint8_t u8;
@@ -28,6 +29,11 @@ typedef unsigned int uint;
     typeof(x) _t = x;                                                          \
     (_t < min) ? min : (_t > max) ? max : _t;                                  \
   })
+
+#define GLUE(x,y) x##y
+#define GLUE_(x,y) x##_##y
+#define GLUE_EXPANDED(x,y) GLUE(x,y)
+#define GLUE_EXPANDED_(x,y) GLUE_(x,y)
 
 #define clzl(x) __builtin_clzl(x)
 #define clz(x) __builtin_clz(x)
