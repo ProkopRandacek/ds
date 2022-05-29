@@ -106,7 +106,7 @@ struct P(table) {
 #ifndef HT_KEY_CUSTOM
 uint P(hash)(K key) {
 #  ifdef HT_KEY_ATOMIC
-  return ((sizeof(key) <= 4) ? hash_u32(key) : hash_u64(key));
+  return ((sizeof(key) <= 4) ? ds_hash_u32(key) : ds_hash_u64(key));
 #  elif defined(HT_KEY_MEM)
   // TODO
 #  else
