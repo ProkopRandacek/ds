@@ -57,3 +57,15 @@ struct ar_head {
       p = (typeof(p))&_h->elms;                                                \
     }                                                                          \
   })
+
+// foreach by value
+#define arforev(p, v)                                                          \
+  for (size_t i = 0, end = arlen(p); ({                                        \
+         v = (i < end) ? p[i] : 0;                                             \
+         i < end;                                                              \
+       });                                                                     \
+       i++)
+
+// foreach by index
+#define arforei(p, i) for (size_t i = 0, end = arlen(p); i < end; i++)
+

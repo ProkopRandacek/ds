@@ -43,10 +43,17 @@
  *
  * ### Functions
  *
- * lookup
- * insert
- * update
- * delete
+ * function | Description
+ * ---------|----
+ * init     | init a table
+ * deinit   | free memory used by a table
+ * alloc    | alloc + init a table
+ * free     | Free memory used by a table and the table itself
+ *
+ * lookup   | try to find a value under a key.
+ * insert   | try to insert a new key-value pair.
+ * update   | update value under a key. create key if needed.
+ * delete   | delete a key-value pair if it exists.
  */
 
 #ifndef HT_KEY
@@ -86,6 +93,8 @@
 #define MAKE_GRAVE(x) x = HT_KEY_GRAVE
 #define MAKE_EMPTY(x) x = HT_KEY_EMPTY
 
+#define T struct P(table)
+
 struct P(table) {
   size_t len;    // number of elements in table
   size_t cap;    // capacity of the key&value containers
@@ -93,13 +102,6 @@ struct P(table) {
   V* vals;
   K* keys;
 };
-
-struct P(remove_result) {
-  bool removed;
-  V v;
-};
-
-#define T struct P(table)
 
 #ifndef HT_KEY_CUSTOM
 uint P(hash)(K key) {
@@ -276,20 +278,25 @@ bool P(contains)(T* t, K k) {
 }
 
 #undef P
+#undef T
+
+#undef K
+#undef V
+
 #undef IS_GRAVE
 #undef IS_EMPTY
 #undef MAKE_GRAVE
 #undef MAKE_EMPTY
 
-#undef HT_VAL
 #undef HT_KEY
-#undef HT_PREFIX
 #undef HT_KEY_ATOMIC
+#undef HT_KEY_CUSTOM
+#undef HT_KEY_EMPTY
+#undef HT_KEY_GRAVE
 #undef HT_KEY_MEM
 #undef HT_KEY_STR
 #undef HT_KEY_STRPTR
-#undef HT_KEY_CUSTOM
-#undef HT_WANT_FIND
-#undef HT_WANT_LOOKUP
-#undef HT_WANT_NEW
+#undef HT_MAX_DENSITY
+#undef HT_MAX_GRAVE
+#undef HT_VAL
 

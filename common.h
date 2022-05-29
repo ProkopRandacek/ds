@@ -24,11 +24,6 @@ typedef unsigned int uint;
 #define MIN(a, b) (((a) < (b)) ? (a) : (b))
 #define MAX(a, b) (((a) > (b)) ? (a) : (b))
 #define ABS(x) ((x) < 0 ? -(x) : (x))
-#define CLAMP(x, min, max)                                                     \
-  ({                                                                           \
-    typeof(x) _t = x;                                                          \
-    (_t < min) ? min : (_t > max) ? max : _t;                                  \
-  })
 
 #define GLUE(x,y) x##y
 #define GLUE_(x,y) x##_##y
