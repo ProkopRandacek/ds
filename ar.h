@@ -3,6 +3,10 @@
 
 #include "common.h"
 
+#ifndef DS_REALLOC
+#  define ds_realloc realloc
+#endif
+
 struct ar_head {
   size_t len, cap;
   byte elms[]; // this is where the data lives. byte is just a placeholder and
@@ -11,13 +15,13 @@ struct ar_head {
 
 #define arinit(p)                                                              \
   do {                                                                         \
-    struct ar_head* _h = malloc(sizeof(*_h) + sizeof(*p) * 2);                 \
+    struct ar_head* _h = ds_realloc(NULL, sizeof(*_h) + sizeof(*p) * 2);       \
     _h->len = 0;                                                               \
     _h->cap = 1;                                                               \
     p = (typeof(p))&_h->elms;                                                  \
   } while (0)
 
-#define arfree(p) free(SKIP_BACK(struct ar_head, elms, p))
+#define arfree(p) ds_realloc(SKIP_BACK(struct ar_head, elms, p), 0)
 
 #define arlen(p)                                                               \
   ({                                                                           \
@@ -38,7 +42,7 @@ struct ar_head {
     _h->len += n;                                                              \
     if (_h->len >= _h->cap) {                                                  \
       _h->cap = MAX(_h->cap * 2, _h->len);                                     \
-      _h = realloc(_h, sizeof(*_h) + sizeof(*p) * _h->cap);                    \
+      _h = ds_realloc(_h, sizeof(*_h) + sizeof(*p) * _h->cap);                 \
       p = (typeof(p))&_h->elms;                                                \
     }                                                                          \
     typeof(*(p))* _c = p + _l;                                                 \
@@ -56,7 +60,7 @@ struct ar_head {
     size_t _c = _h->len + n;                                                   \
     if (_c >= _h->cap) {                                                       \
       _h->cap = _c;                                                            \
-      _h = realloc(_h, sizeof(*_h) + sizeof(*p) * _h->cap);                    \
+      _h = ds_realloc(_h, sizeof(*_h) + sizeof(*p) * _h->cap);                 \
       p = (typeof(p))&_h->elms;                                                \
     }                                                                          \
   })
