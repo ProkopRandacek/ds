@@ -17,18 +17,17 @@ typedef uint64_t u64;
 typedef int64_t s64;
 typedef unsigned int uint;
 
-#define CHECK_PTR_TYPE(x, type) ((x) - (type)(x) + (type)(x))
-#define OFFSETOF(s, i) ((uint)offsetof(s, i))
-#define SKIP_BACK(s, i, p) ((s*)((char*)p - OFFSETOF(s, i)))
+#define ds_offsetof(s, i) ((uint)offsetof(s, i))
+#define ds_skip_back(s, i, p) ((s*)((char*)p - offsetof(s, i)))
 
-#define MIN(a, b) (((a) < (b)) ? (a) : (b))
-#define MAX(a, b) (((a) > (b)) ? (a) : (b))
-#define ABS(x) ((x) < 0 ? -(x) : (x))
+#define ds_min(a, b) (((a) < (b)) ? (a) : (b))
+#define ds_max(a, b) (((a) > (b)) ? (a) : (b))
+#define ds_abs(x) ((x) < 0 ? -(x) : (x))
 
-#define GLUE(x,y) x##y
-#define GLUE_(x,y) x##_##y
-#define GLUE_EXPANDED(x,y) GLUE(x,y)
-#define GLUE_EXPANDED_(x,y) GLUE_(x,y)
+#define ds_glue(x,y) x##y
+#define ds_glue_(x,y) x##_##y
+#define ds_glue_expanded(x,y) glue(x,y)
+#define ds_glue_expanded_(x,y) glue_(x,y)
 
 #define clzl(x) __builtin_clzl(x)
 #define clz(x) __builtin_clz(x)

@@ -24,28 +24,28 @@ struct ar_head {
 #define arfree(p)                                                              \
   do {                                                                         \
     /* warning is emitted when we dont use realloc's return value */           \
-    void* _ = ds_realloc(SKIP_BACK(struct ar_head, elms, p), 0);               \
+    void* _ = ds_realloc(ds_skip_back(struct ar_head, elms, p), 0);            \
   } while (0)
 
 #define arlen(p)                                                               \
   ({                                                                           \
-    struct ar_head* _h = SKIP_BACK(struct ar_head, elms, p);                   \
+    struct ar_head* _h = ds_skip_back(struct ar_head, elms, p);                \
     _h->len;                                                                   \
   })
 
 #define arcap(p)                                                               \
   ({                                                                           \
-    struct ar_head* _h = SKIP_BACK(struct ar_head, elms, p);                   \
+    struct ar_head* _h = ds_skip_back(struct ar_head, elms, p);                \
     _h->cap;                                                                   \
   })
 
 #define arpushm(p, n)                                                          \
   ({                                                                           \
-    struct ar_head* _h = SKIP_BACK(struct ar_head, elms, p);                   \
+    struct ar_head* _h = ds_skip_back(struct ar_head, elms, p);                \
     size_t _l = _h->len;                                                       \
     _h->len += n;                                                              \
     if (_h->len >= _h->cap) {                                                  \
-      _h->cap = MAX(_h->cap * 2, _h->len);                                     \
+      _h->cap = ds_max(_h->cap * 2, _h->len);                                  \
       _h = ds_realloc(_h, sizeof(*_h) + sizeof(*p) * _h->cap);                 \
       p = (typeof(p))&_h->elms;                                                \
     }                                                                          \
@@ -60,7 +60,7 @@ struct ar_head {
 
 #define arreserve(p, n)                                                        \
   ({                                                                           \
-    struct ar_head* _h = SKIP_BACK(struct ar_head, elms, p);                   \
+    struct ar_head* _h = ds_skip_back(struct ar_head, elms, p);                \
     size_t _c = _h->len + n;                                                   \
     if (_c >= _h->cap) {                                                       \
       _h->cap = _c;                                                            \
@@ -71,14 +71,14 @@ struct ar_head {
 
 #define arpop(p)                                                               \
   ({                                                                           \
-    struct ar_head* _h = SKIP_BACK(struct ar_head, elms, p);                   \
+    struct ar_head* _h = ds_skip_back(struct ar_head, elms, p);                \
     typeof(*(p)) _c = p[--_h->len];                                            \
     _c;                                                                        \
   })
 
 #define arpeek(p)                                                              \
   ({                                                                           \
-    struct ar_head* _h = SKIP_BACK(struct ar_head, elms, p);                   \
+    struct ar_head* _h = ds_skip_back(struct ar_head, elms, p);                \
     typeof(*(p)) _c = p[_h->len - 1];                                          \
     _c;                                                                        \
   })
