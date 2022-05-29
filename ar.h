@@ -3,7 +3,7 @@
 
 #include "common.h"
 
-#ifndef DS_REALLOC
+#ifndef ds_realloc
 #  define ds_realloc realloc
 #endif
 
