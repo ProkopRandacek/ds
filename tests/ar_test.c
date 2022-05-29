@@ -1,4 +1,4 @@
-#include "ar.h"
+#include "../ar.h"
 #include "test.h"
 
 void test_init_free() {
@@ -20,6 +20,24 @@ void test_arpush(size_t iter) {
   for (size_t i = 0; i < iter; i++)
     if (a[i] != i * 2)
       __builtin_trap();
+
+  escape(a);
+  arfree(a);
+}
+
+void test_arpop(size_t iter) {
+  int* a;
+  arinit(a);
+
+  for (size_t i = 0; i < iter; i++)
+    arpush(a, i * 5);
+
+  for (size_t i = 0; i < iter; i++) {
+    int e = (iter - i - 1) * 5;
+    assert(arpop(a) == e);
+  }
+
+  assert(arlen(a) == 0);
 
   escape(a);
   arfree(a);
@@ -70,6 +88,7 @@ int main() {
   test_init_free();
   test_arpush(iter);
   test_arpushm(iter);
+  test_arpop(iter);
   test_foreach(iter);
 }
 

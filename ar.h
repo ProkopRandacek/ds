@@ -21,7 +21,11 @@ struct ar_head {
     p = (typeof(p))&_h->elms;                                                  \
   } while (0)
 
-#define arfree(p) ds_realloc(SKIP_BACK(struct ar_head, elms, p), 0)
+#define arfree(p)                                                              \
+  do {                                                                         \
+    /* warning is emitted when we dont use realloc's return value */           \
+    void* _ = ds_realloc(SKIP_BACK(struct ar_head, elms, p), 0);               \
+  } while (0)
 
 #define arlen(p)                                                               \
   ({                                                                           \
@@ -63,6 +67,20 @@ struct ar_head {
       _h = ds_realloc(_h, sizeof(*_h) + sizeof(*p) * _h->cap);                 \
       p = (typeof(p))&_h->elms;                                                \
     }                                                                          \
+  })
+
+#define arpop(p)                                                               \
+  ({                                                                           \
+    struct ar_head* _h = SKIP_BACK(struct ar_head, elms, p);                   \
+    typeof(*(p)) _c = p[--_h->len];                                            \
+    _c;                                                                        \
+  })
+
+#define arpeek(p)                                                              \
+  ({                                                                           \
+    struct ar_head* _h = SKIP_BACK(struct ar_head, elms, p);                   \
+    typeof(*(p)) _c = p[_h->len - 1];                                          \
+    _c;                                                                        \
   })
 
 // foreach by value
