@@ -1,3 +1,6 @@
+#ifndef DS_HASH_H
+#define DS_HASH_H
+
 #include "common.h"
 
 // taken from https://www.ucw.cz/libucw/
@@ -29,3 +32,4 @@ static uint hash_mem(size_t len, char* str) {
   return hash;
 }
 
+#endif

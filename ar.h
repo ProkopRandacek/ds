@@ -1,3 +1,6 @@
+#ifndef DS_AR_H
+#define DS_AR_H
+
 #include "common.h"
 
 struct ar_head {
@@ -69,3 +72,4 @@ struct ar_head {
 // foreach by index
 #define arforei(p, i) for (size_t i = 0, end = arlen(p); i < end; i++)
 
+#endif
