@@ -24,7 +24,7 @@ struct ar_head {
 #define arfree(p)                                                              \
   do {                                                                         \
     /* warning is emitted when we dont use realloc's return value */           \
-    void* _ = ds_realloc(ds_skip_back(struct ar_head, elms, p), 0);            \
+    ds_unused void* _ = ds_realloc(ds_skip_back(struct ar_head, elms, p), 0);  \
   } while (0)
 
 #define arlen(p)                                                               \
