@@ -26,8 +26,8 @@ typedef unsigned int uint;
 
 #define ds_glue(x, y) x##y
 #define ds_glue_(x, y) x##_##y
-#define ds_glue_expanded(x, y) glue(x, y)
-#define ds_glue_expanded_(x, y) glue_(x, y)
+#define ds_glue_expanded(x, y) ds_glue(x, y)
+#define ds_glue_expanded_(x, y) ds_glue_(x, y)
 
 #define ds_unused __attribute__((unused))
 

@@ -37,23 +37,21 @@
  * ### Switches
  *
  * HT_BYVAL - Return values in the hash table by value instead of by pointer
- *
- *
- * ### Macros that define what functions you give
+ * HT_WANT_PRINT - Create a debug print function
  *
  * ### Functions
  *
- * function | Description
+ * Function | Description
  * ---------|----
- * init     | init a table
- * deinit   | free memory used by a table
- * alloc    | alloc + init a table
+ * init     | Init a table
+ * deinit   | Free memory used by a table
+ * alloc    | Alloc + init a table
  * free     | Free memory used by a table and the table itself
  *
- * lookup   | try to find a value under a key.
- * insert   | try to insert a new key-value pair.
- * update   | update value under a key. create key if needed.
- * delete   | delete a key-value pair if it exists.
+ * lookup   | Try to find a value under a key.
+ * insert   | Try to insert a new key-value pair.
+ * update   | Update value under a key. Create key if needed.
+ * delete   | Delete a key-value pair if it exists.
  */
 
 #ifndef HT_KEY
@@ -82,7 +80,7 @@
 #  define HT_MAX_GRAVE 0.25
 #endif
 
-#define P(x) GLUE_EXPANDED_(HT_PREFIX, x)
+#define P(x) ds_glue_expanded_(HT_PREFIX, x)
 
 // shortcuts
 #define K HT_KEY
@@ -151,21 +149,33 @@ void P(free)(T* t) {
   free(t);
 }
 
-#include <stdio.h>
+#ifdef HT_WANT_PRINT
+#  include <stdio.h>
 void P(print)(T* t) {
-  printf("ht %p %zu %zu %zu\n", t, t->len, t->cap, t->graves);
+  printf("ht @ %p: len=%zu cap=%zu graves=%zu\n", t, t->len, t->cap, t->graves);
+  printf("G - grave, . - empty, # - used\n");
   for (size_t i = 0; i < t->cap; i++) {
-    printf("%d -> %d\n", t->keys[i], t->vals[i]);
+    K k = t->keys[i];
+    if (IS_GRAVE(k)) {
+      putchar('G');
+    } else if (IS_EMPTY(k)) {
+      putchar('.');
+    } else {
+      putchar('#');
+    }
   }
+  putchar('\n');
 }
+#endif
 
 /**
  * Allocates new containers for keys&values and rehashes all of the values over
  * there (for grave removing and growing).
+ *
+ * I don't think its possible to do it inplace
  */
 void P(rehash)(T* t, size_t old_cap) {
   t->graves = 0;
-  // I don't think this can be done inplace well
   V* ov = t->vals; // old values
   K* ok = t->keys; // old keys
   t->vals = malloc(sizeof(V) * t->cap);
@@ -173,12 +183,12 @@ void P(rehash)(T* t, size_t old_cap) {
   for (size_t i = 0; i < t->cap; i++)
     MAKE_EMPTY(t->keys[i]);
   for (size_t i = 0; i < old_cap; i++) {
-    K* b = &ok[i];
-    if (!IS_EMPTY(*b) && !IS_GRAVE(*b)) { // rehash only non-empty non-graves
-      uint hash = P(hash)(*b) % t->cap;
+    K b = ok[i];
+    if (!IS_EMPTY(b) && !IS_GRAVE(b)) { // rehash only non-empty non-graves
+      uint hash = P(hash)(b) % t->cap;
       while (!IS_EMPTY(t->keys[hash])) // walk until we find empty slot
-        hash++;
-      t->keys[hash] = *b; // move
+        hash = (hash + 1) % t->cap;
+      t->keys[hash] = b; // move
       t->vals[hash] = ov[i];
     }
   }
@@ -186,11 +196,16 @@ void P(rehash)(T* t, size_t old_cap) {
   free(ok);
 }
 
-void P(maybe_grow)(T* t) {
+void P(_maybe_grow)(T* t) {
   if (t->len > HT_MAX_DENSITY * t->cap) {
     t->cap *= 2;
     P(rehash)(t, t->cap / 2);
   }
+}
+
+void P(_maybe_clear)(T* t) {
+  if (t->graves > HT_MAX_GRAVE * t->cap)
+    P(rehash)(t, t->cap);
 }
 
 /**
@@ -198,17 +213,16 @@ void P(maybe_grow)(T* t) {
  */
 size_t P(_get_key_index)(T* t, K k, bool* new) {
   for (size_t i = P(hash)(k) % t->cap;; i = (i + 1) % t->cap) {
-    K* b = &t->keys[i];
-    if (IS_GRAVE(*b)) {
+    K b = t->keys[i];
+    if (IS_GRAVE(b))
       continue;
-    } else if (IS_EMPTY(*b)) {
+    else if (IS_EMPTY(b)) {
       *new = true;
       return i;
-    } else if (P(eq)(*b, k)) {
+    } else if (P(eq)(b, k))
       return i;
-    } else {
+    else
       continue;
-    }
   }
 }
 
@@ -234,7 +248,7 @@ bool P(insert)(T* t, K k, V v) {
   t->keys[i] = k;
   t->vals[i] = v;
   t->len++;
-  P(maybe_grow)(t);
+  P(_maybe_grow)(t);
   return true;
 }
 
@@ -248,7 +262,8 @@ void P(update)(T* t, K k, V v) {
   if (new) {
     t->keys[i] = k;
     t->vals[i] = v;
-    P(maybe_grow)(t);
+    t->len++;
+    P(_maybe_grow)(t);
   } else {
     t->vals[i] = v;
   }
@@ -268,6 +283,7 @@ V P(remove)(T* t, K k, bool* b) {
   MAKE_GRAVE(t->keys[i]);
   t->graves++;
   *b = true;
+  P(_maybe_clear)(t);
   return v;
 }
 
@@ -299,4 +315,6 @@ bool P(contains)(T* t, K k) {
 #undef HT_MAX_DENSITY
 #undef HT_MAX_GRAVE
 #undef HT_VAL
+
+#undef HT_WANT_PRINT
 
