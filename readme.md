@@ -10,5 +10,5 @@ Growing array.
 Hash table generator.
 
 ## x.h
-`malloc` and `realloc` can return `NULL` when there is no memory available. This header implements `xmalloc` and `xrealloc` (and `xfree` for completness) that die when `malloc`/`realloc` fails.
+x{malloc,realloc,free}.
 

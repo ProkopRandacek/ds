@@ -124,6 +124,9 @@ struct P(table) {
   size_t graves; // number of graves in the table
   V* vals;
   K* keys;
+#ifdef HT_TABLE_EXTRA_VARS
+  HT_TABLE_EXTRA_VARS
+#endif
 };
 
 #ifndef HT_KEY_CUSTOM
@@ -348,4 +351,3 @@ bool P(contains)(T* t, K k) {
 #undef HT_KEY_LEN
 
 #undef HT_WANT_PRINT
-

@@ -57,4 +57,3 @@ int main() {
   test_print(&t);
   test_deinit(&t);
 }
-

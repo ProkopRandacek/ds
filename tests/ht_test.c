@@ -12,7 +12,7 @@
 int main() {
   struct test_table t;
   test_init(&t);
-  //test_print(&t);
+  // test_print(&t);
   int size = 100;
 
   // check that we can insert values
@@ -42,9 +42,8 @@ int main() {
     else
       assert(*test_lookup(&t, i) == 2);
 
-	test_rehash(&t, t.cap);
+  test_rehash(&t, t.cap);
   test_print(&t);
 
   test_deinit(&t);
 }
-

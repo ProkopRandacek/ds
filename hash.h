@@ -5,7 +5,9 @@
 
 // taken from https://www.ucw.cz/libucw/
 static uint ds_hash_u32(uint x) { return 0x01008041 * x; }
-static uint ds_hash_u64(u64 x) { return ds_hash_u32((uint)x ^ (uint)(x >> 32)); }
+static uint ds_hash_u64(u64 x) {
+  return ds_hash_u32((uint)x ^ (uint)(x >> 32));
+}
 static uint ds_hash_pointer(void* x) {
   return ((sizeof(x) <= 4) ? ds_hash_u32((uint)(uintptr_t)x)
                            : ds_hash_u64((u64)(uintptr_t)x));
