@@ -86,7 +86,7 @@ struct ar_head {
 // foreach by value
 #define arforev(p, v)                                                          \
   for (size_t i = 0, end = arlen(p); ({                                        \
-         v = (i < end) ? p[i] : 0;                                             \
+         v = (i < end) ? p[i] : p[0];                                          \
          i < end;                                                              \
        });                                                                     \
        i++)
