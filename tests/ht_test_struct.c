@@ -15,7 +15,7 @@ struct val {
 #define HT_KEY_EMPTY -1
 #define HT_KEY_GRAVE -2
 
-#include "ht.h"
+#include "../ht.h"
 
 int main() {
   struct test_table t;

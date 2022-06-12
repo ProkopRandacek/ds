@@ -39,6 +39,14 @@
  * HT_BYVAL - Return values in the hash table by value instead of by pointer
  * HT_WANT_PRINT - Create a debug print function
  *
+ * #### HT_MULTIKEY
+ * Allows you to alter number of arguments that all functions take as key.
+ * For example it might be desired to have two ints as a key but creating
+ * a struct for it is annoying.
+ * Internally, a struct is created to store the keys.
+ *
+ * HT_MULTIKEY has to have a value in format
+ *
  * ### Functions
  *
  * Function | Description
@@ -54,8 +62,12 @@
  * delete   | Delete a key-value pair if it exists.
  */
 
-#ifndef HT_KEY
-#  error You have to define HT_KEY
+#if defined(HT_MULTIKEY) && defined(HT_KEY)
+#  error You cant define both HT_MULTIKEY and HT_KEY
+#endif
+
+#if !defined(HT_MULTIKEY) && !defined(HT_KEY)
+#  error You have to define either HT_KEY or HT_MULTIKEY
 #endif
 
 #ifndef HT_VAL
@@ -82,6 +94,19 @@
 
 #define P(x) ds_glue_expanded_(HT_PREFIX, x)
 
+#ifdef HT_MULTIKEY
+struct P(key) {
+  HT_MULTIKEY(, ;)
+};
+#  define KARG HT_MULTIKEY(, ds_comma)
+#  define KARGPASS HT_MULTIKEY_NAMES(, )
+#  define HT_KEY P(key)
+#else
+#  define KARG K k
+#  define KARGPASS k
+#endif
+// ended here, checks about defined macros combined with other macros above.
+
 // shortcuts
 #define K HT_KEY
 #define V HT_VAL
@@ -106,7 +131,9 @@ uint P(hash)(K key) {
 #  ifdef HT_KEY_ATOMIC
   return ((sizeof(key) <= 4) ? ds_hash_u32(key) : ds_hash_u64(key));
 #  elif defined(HT_KEY_MEM)
-  // TODO
+  return ds_hash_mem(HT_KEY_LEN, &key);
+#  elif defined(HT_KEY_HASH)
+  return HT_KEY_HASH(key);
 #  else
 #    error Unable to determin which hash function to generate
 #  endif
@@ -116,7 +143,9 @@ bool P(eq)(K a, K b) {
 #  ifdef HT_KEY_ATOMIC
   return a == b;
 #  elif defined(HT_KEY_MEM)
-  return memcmp(a, b) == 0;
+  return memcmp(a, b, HT_KEY_LEN) == 0;
+#  elif defined(HT_KEY_EQ)
+  return HT_KEY_EQ(a, b);
 #  else
 #    error Unable to determin which hash function to generate
 #  endif
@@ -153,11 +182,11 @@ void P(free)(T* t) {
 #  include <stdio.h>
 void P(print)(T* t) {
   printf("ht @ %p: len=%zu cap=%zu graves=%zu\n", t, t->len, t->cap, t->graves);
-  printf("G - grave, . - empty, # - used\n");
+  printf("+ - grave, . - empty, # - used\n");
   for (size_t i = 0; i < t->cap; i++) {
     K k = t->keys[i];
     if (IS_GRAVE(k)) {
-      putchar('G');
+      putchar('+');
     } else if (IS_EMPTY(k)) {
       putchar('.');
     } else {
@@ -212,14 +241,14 @@ void P(_maybe_clear)(T* t) {
  * Internal. Looks up the given key and returns its index
  */
 size_t P(_get_key_index)(T* t, K k, bool* new) {
-  for (size_t i = P(hash)(k) % t->cap;; i = (i + 1) % t->cap) {
+  for (size_t i = P(hash)(KARGPASS) % t->cap;; i = (i + 1) % t->cap) {
     K b = t->keys[i];
     if (IS_GRAVE(b))
       continue;
     else if (IS_EMPTY(b)) {
       *new = true;
       return i;
-    } else if (P(eq)(b, k))
+    } else if (P(eq)(b, KARGPASS))
       return i;
     else
       continue;
@@ -230,9 +259,9 @@ size_t P(_get_key_index)(T* t, K k, bool* new) {
  * Finds a value with given key and returns a pointer to it. Returns NULL if the
  * key is not present
  */
-V* P(lookup)(T* t, K k) {
+V* P(lookup)(T* t, KARG) {
   bool new = false;
-  size_t i = P(_get_key_index)(t, k, &new);
+  size_t i = P(_get_key_index)(t, KARGPASS, &new);
   return new ? NULL : &t->vals[i];
 }
 
@@ -315,6 +344,8 @@ bool P(contains)(T* t, K k) {
 #undef HT_MAX_DENSITY
 #undef HT_MAX_GRAVE
 #undef HT_VAL
+
+#undef HT_KEY_LEN
 
 #undef HT_WANT_PRINT
 

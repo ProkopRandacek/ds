@@ -17,7 +17,7 @@ static uint ds_hash_str(char* str) {
   int c;
 
   while ((c = *str++))
-    hash = ((hash << 5) + hash) + c; /* hash * 33 + c */
+    hash = ((hash << 5) + hash) + c;
 
   return hash;
 }
@@ -27,7 +27,7 @@ static uint ds_hash_mem(size_t len, char* str) {
   uint hash = 5381;
 
   for (size_t i = 0; i < len; i++)
-    hash = ((hash << 5) + hash) + str[i]; /* hash * 33 + c */
+    hash = ((hash << 5) + hash) + str[i];
 
   return hash;
 }

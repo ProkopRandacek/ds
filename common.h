@@ -23,6 +23,7 @@ typedef unsigned int uint;
 #define ds_min(a, b) (((a) < (b)) ? (a) : (b))
 #define ds_max(a, b) (((a) > (b)) ? (a) : (b))
 #define ds_abs(x) ((x) < 0 ? -(x) : (x))
+#define ds_comma ,
 
 #define ds_glue(x, y) x##y
 #define ds_glue_(x, y) x##_##y
