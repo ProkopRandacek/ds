@@ -70,7 +70,6 @@ void test_foreach(size_t iter) {
   for (size_t i = 0; i < iter; i++)
     s[i] = 3;
 
-  int v;
   arforev(a, v) { // foreach by value. v is value
     assert(v == 3);
   }
