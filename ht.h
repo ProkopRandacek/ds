@@ -92,6 +92,10 @@
 #  define HT_MAX_GRAVE 0.25
 #endif
 
+#ifndef HT_FUNC_ATTR
+#  define HT_FUNC_ATTR
+#endif
+
 #define P(x) ds_glue_expanded_(HT_PREFIX, x)
 
 #ifdef HT_MULTIKEY
@@ -130,7 +134,7 @@ struct P(table) {
 };
 
 #ifndef HT_KEY_CUSTOM
-uint P(hash)(K key) {
+HT_FUNC_ATTR uint P(hash)(K key) {
 #  ifdef HT_KEY_ATOMIC
   return ((sizeof(key) <= 4) ? ds_hash_u32(key) : ds_hash_u64(key));
 #  elif defined(HT_KEY_MEM)
@@ -142,7 +146,7 @@ uint P(hash)(K key) {
 #  endif
 }
 
-bool P(eq)(K a, K b) {
+HT_FUNC_ATTR bool P(eq)(K a, K b) {
 #  ifdef HT_KEY_ATOMIC
   return a == b;
 #  elif defined(HT_KEY_MEM)
@@ -155,7 +159,7 @@ bool P(eq)(K a, K b) {
 }
 #endif // ifndef HT_KEY_CUSTOM
 
-void P(init)(T* t) {
+HT_FUNC_ATTR void P(init)(T* t) {
   t->len = 0;
   t->cap = 8;
   t->graves = 0;
@@ -165,25 +169,25 @@ void P(init)(T* t) {
     MAKE_EMPTY(t->keys[i]);
 }
 
-void P(deinit)(T* t) {
+HT_FUNC_ATTR void P(deinit)(T* t) {
   free(t->vals);
   free(t->keys);
 }
 
-T* P(alloc)(void) {
-  struct P(table)* t = malloc(sizeof(T));
+HT_FUNC_ATTR T* P(alloc)(void) {
+  T* t = malloc(sizeof(T));
   P(init)(t);
   return t;
 }
 
-void P(free)(T* t) {
+HT_FUNC_ATTR void P(free)(T* t) {
   P(deinit)(t);
   free(t);
 }
 
 #ifdef HT_WANT_PRINT
 #  include <stdio.h>
-void P(print)(T* t) {
+HT_FUNC_ATTR void P(print)(T* t) {
   printf("ht @ %p: len=%zu cap=%zu graves=%zu\n", t, t->len, t->cap, t->graves);
   printf("+ - grave, . - empty, # - used\n");
   for (size_t i = 0; i < t->cap; i++) {
@@ -206,7 +210,7 @@ void P(print)(T* t) {
  *
  * I don't think its possible to do it inplace
  */
-void P(rehash)(T* t, size_t old_cap) {
+HT_FUNC_ATTR void P(rehash)(T* t, size_t old_cap) {
   t->graves = 0;
   V* ov = t->vals; // old values
   K* ok = t->keys; // old keys
@@ -228,14 +232,14 @@ void P(rehash)(T* t, size_t old_cap) {
   free(ok);
 }
 
-void P(_maybe_grow)(T* t) {
+HT_FUNC_ATTR void P(_maybe_grow)(T* t) {
   if (t->len > HT_MAX_DENSITY * t->cap) {
     t->cap *= 2;
     P(rehash)(t, t->cap / 2);
   }
 }
 
-void P(_maybe_clear)(T* t) {
+HT_FUNC_ATTR void P(_maybe_clear)(T* t) {
   if (t->graves > HT_MAX_GRAVE * t->cap)
     P(rehash)(t, t->cap);
 }
@@ -243,7 +247,7 @@ void P(_maybe_clear)(T* t) {
 /**
  * Internal. Looks up the given key and returns its index
  */
-size_t P(_get_key_index)(T* t, K k, bool* new) {
+HT_FUNC_ATTR size_t P(_get_key_index)(T* t, K k, bool* new) {
   for (size_t i = P(hash)(KARGPASS) % t->cap;; i = (i + 1) % t->cap) {
     K b = t->keys[i];
     if (IS_GRAVE(b))
@@ -262,7 +266,7 @@ size_t P(_get_key_index)(T* t, K k, bool* new) {
  * Finds a value with given key and returns a pointer to it. Returns NULL if the
  * key is not present
  */
-V* P(lookup)(T* t, KARG) {
+HT_FUNC_ATTR V* P(lookup)(T* t, KARG) {
   bool new = false;
   size_t i = P(_get_key_index)(t, KARGPASS, &new);
   return new ? NULL : &t->vals[i];
@@ -272,7 +276,7 @@ V* P(lookup)(T* t, KARG) {
  * Inserts a new key-value pair. If the key is already present returns false.
  * Otherwise returns true
  */
-bool P(insert)(T* t, K k, V v) {
+HT_FUNC_ATTR bool P(insert)(T* t, K k, V v) {
   bool new = false;
   size_t i = P(_get_key_index)(t, k, &new);
   if (!new)
@@ -288,7 +292,7 @@ bool P(insert)(T* t, K k, V v) {
  * Updates the value behind the given key.
  * Inserts a new key-value pair if needed.
  */
-void P(update)(T* t, K k, V v) {
+HT_FUNC_ATTR void P(update)(T* t, K k, V v) {
   bool new = false;
   size_t i = P(_get_key_index)(t, k, &new);
   if (new) {
@@ -304,7 +308,7 @@ void P(update)(T* t, K k, V v) {
 /**
  * Removes a key.
  */
-V P(remove)(T* t, K k, bool* b) {
+HT_FUNC_ATTR V P(remove)(T* t, K k, bool* b) {
   bool new = false;
   size_t i = P(_get_key_index)(t, k, &new);
   if (new) {
@@ -319,7 +323,7 @@ V P(remove)(T* t, K k, bool* b) {
   return v;
 }
 
-bool P(contains)(T* t, K k) {
+HT_FUNC_ATTR bool P(contains)(T* t, K k) {
   bool new = false;
   P(_get_key_index)(t, k, &new);
   return !new;
